@@ -22,20 +22,38 @@ query GetHomePageData {
 }
 `
 
+interface Field {
+  name: string;
+  value: string;
+}
+
+interface Item {
+  name: string;
+  displayName: string;
+  fields: Field[];
+}
+
+interface Layout {
+  item: Item;
+}
+
+interface HomePageDataResponse {
+  layout: Layout;
+}
 
 const HomepageContent = () => {
-  const [fields, setFields] = useState<Array<{ name: string; value: any }>>([]);
+  const [fields, setFields] = useState<Field[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    xmGraphQLClient.request(HOMEPAGE_QUERY)
-      .then((res: any) => {
+    xmGraphQLClient.request<HomePageDataResponse>(HOMEPAGE_QUERY)
+      .then((res) => {
         setFields(res.layout.item.fields || []);
         setLoading(false);
         console.log(res)
       })
-      .catch((err) => {
+      .catch((err: Error) => {
         setError(err.message);
         setLoading(false);
         console.log("error", err.message)
