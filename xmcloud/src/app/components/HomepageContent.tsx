@@ -5,9 +5,11 @@
 import React, { useEffect, useState } from 'react';
 import { xmGraphQLClient } from '@/lib/xmclient';
 
+const KGCD_SITE = process.env.NEXT_PUBLIC_KGCD_SITE || "kgcdemo";
+
 const HOMEPAGE_QUERY = `
 query GetHomePageData {
-  layout(site: "kgcdemo", routePath: "/", language: "en") {
+  layout(site: "${KGCD_SITE}", routePath: "/", language: "en") {
     item {
       name
       displayName
@@ -16,10 +18,8 @@ query GetHomePageData {
         value
       }
     }
-  
-    }
   }
-
+}
 `
 
 
