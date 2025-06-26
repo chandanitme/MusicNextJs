@@ -6,45 +6,67 @@ import React, { useEffect, useState } from 'react';
 import { xmGraphQLClient } from '@/lib/xmclient';
 
 const HOMEPAGE_QUERY = `
-query{
-  item(path: "/sitecore/content/home", language: "en") {
-    id
-    name
-    path
+query GetHomePageData {
+  layout(site: "kgcdemo", routePath: "/", language: "en") {
+    item {
+      name
+      displayName
+      fields {
+        name
+        value
+      }
+    }
+  
+    }
   }
-}
+
 `
 
 
 const HomepageContent = () => {
-  const [data, setData] = useState<{ id: string; name: string } | null>(null);
+  const [fields, setFields] = useState<Array<{ name: string; value: any }>>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     xmGraphQLClient.request(HOMEPAGE_QUERY)
       .then((res: any) => {
-        setData(res.item);
+        setFields(res.layout.item.fields || []);
         setLoading(false);
         console.log(res)
-       
       })
       .catch((err) => {
         setError(err.message);
         setLoading(false);
-          console.log("error", err.message)
+        console.log("error", err.message)
       });
   }, []);
 
-
   if (loading) return <section>Loading...</section>;
   if (error) return <section>Error: {error}</section>;
-  if (!data) return <section>No data found.</section>;
+  if (!fields || fields.length === 0) return <section>No data found.</section>;
 
   return (
-    <section>
-      <h1>{data.id}</h1>
-      <p>{data.name}</p>
+    <section className="max-w-2xl mx-auto mt-10 p-6 bg-white rounded-lg shadow-md">
+      <h1 className="text-2xl font-bold mb-6 text-center">Fields</h1>
+      <div className="overflow-x-auto">
+        <table className="min-w-full border border-gray-200 rounded-lg">
+          <thead className="bg-gray-100">
+            <tr>
+              <th className="py-2 px-4 border-b text-left font-semibold">Key</th>
+              <th className="py-2 px-4 border-b text-left font-semibold">Value</th>
+            </tr>
+          </thead>
+          <tbody>
+            {fields.map((field, idx) => (
+              <tr key={idx} className="even:bg-gray-50 hover:bg-gray-100 transition-colors">
+                <td className="py-2 px-4 border-b font-medium">{field.name}</td>
+                <td className="py-2 px-4 border-b">{String(field.value)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </section>
   );
 };
