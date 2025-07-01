@@ -8,8 +8,6 @@ import { Field } from '@/interfaces/Field';
 import { Item } from '@/interfaces/Item';
 import { parseSitecoreLinkField } from '@/helper/sitecoreHelper';
 
-const KGCD_SITE = process.env.NEXT_PUBLIC_KGCD_SITE || "kgcdemo";
-
 const herocomponent_query = `
  query  heropcomponnetdata{
   item(path: "/sitecore/content/demo-sites/kgcdemo/Data/Heroitem", language: "en") {
