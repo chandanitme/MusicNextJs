@@ -4,6 +4,8 @@
 
 import React, { useEffect, useState } from 'react';
 import { xmGraphQLClient } from '@/lib/xmclient';
+import { Field } from '@/interfaces/Field';
+import { Item } from '@/interfaces/Item';
 
 const KGCD_SITE = process.env.NEXT_PUBLIC_KGCD_SITE || "kgcdemo";
 
@@ -22,23 +24,10 @@ query GetHomePageData {
 }
 `
 
-interface Field {
-  name: string;
-  value: string;
-}
-
-interface Item {
-  name: string;
-  displayName: string;
-  fields: Field[];
-}
-
-interface Layout {
-  item: Item;
-}
-
 interface HomePageDataResponse {
-  layout: Layout;
+  layout: {
+    item: Item;
+  };
 }
 
 const HomepageContent = () => {

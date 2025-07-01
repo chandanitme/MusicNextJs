@@ -4,7 +4,9 @@
 
 import React, { useEffect, useState } from 'react';
 import { xmGraphQLClient } from '@/lib/xmclient';
-import { parseSitecoreLinkXml } from '../../helper/sitecoreHelper';
+import { Field } from '@/interfaces/Field';
+import { Item } from '@/interfaces/Item';
+import { parseSitecoreLinkField } from '@/helper/sitecoreHelper';
 
 const KGCD_SITE = process.env.NEXT_PUBLIC_KGCD_SITE || "kgcdemo";
 
@@ -21,23 +23,6 @@ const herocomponent_query = `
 }
 `
 
-interface Field {
-  name: string;
-  value: string;
-}
-
-interface Template {
-  name: string;
-}
-
-interface Item {
-
-  fields: Field[];
-}
-
-interface Layout {
-  item: Item;
-}
 interface HeropComponentDataResponse {
   item: Item;
 }
@@ -70,36 +55,14 @@ const HeroSection = () => {
     return obj;
   }, [fields]);
 
-  // Parse ResumeApplication, LoginView, and ConsolidationLink as Sitecore link XML
-  let resumeLink: { text?: string; url?: string } = {};
-  let loginViewLink: { text?: string; url?: string } = {};
-  let consolidationLink: { text?: string; url?: string } = {};
+  // Parse ResumeApplication, LoginView, and ConsolidationLink as Sitecore link fields
+  const resumeLink = parseSitecoreLinkField(fieldsObj.ResumeApplication, 'Resume Application');
+  const loginViewLink = parseSitecoreLinkField(fieldsObj.LoginView, 'Login to view');
+  const consolidationLink = parseSitecoreLinkField(fieldsObj.ConsolidationLink, 'Apply online');
 
-  const resumeValue = fieldsObj.ResumeApplication;
-  const loginViewValue = fieldsObj.LoginView;
-  const consolidationValue = fieldsObj.ConsolidationLink;
-
-  if (resumeValue && resumeValue.trim().startsWith('<link')) {
-    resumeLink = parseSitecoreLinkXml(resumeValue);
-  } else {
-    resumeLink = { text: resumeValue };
-  }
-
-  if (loginViewValue && loginViewValue.trim().startsWith('<link')) {
-    loginViewLink = parseSitecoreLinkXml(loginViewValue);
-  } else {
-    loginViewLink = { text: loginViewValue };
-  }
-
-  if (consolidationValue && consolidationValue.trim().startsWith('<link')) {
-    consolidationLink = parseSitecoreLinkXml(consolidationValue);
-  } else {
-    consolidationLink = { text: consolidationValue };
-  }
-
-  const resumeUrl = resumeLink.url || '#';
-  const loginViewUrl = loginViewLink.url || '#';
-  const consolidationUrl = consolidationLink.url || '#';
+  const resumeUrl = resumeLink.url;
+  const loginViewUrl = loginViewLink.url;
+  const consolidationUrl = consolidationLink.url;
 
   if (loading) return <section>Loading...</section>;
   if (error) return <section>Error: {error}</section>;
@@ -129,12 +92,12 @@ const HeroSection = () => {
         <div className="flex-1 bg-[#17695b] p-8 flex flex-col justify-center min-h-[200px]">
           <h3 className="text-white text-2xl font-bold mb-2"> {fieldsObj.PulseTitle}</h3>
           <p className="text-white text-lg mb-6">{fieldsObj.PulseDescription}</p>
-          <a href={loginViewUrl} className="text-white text-right font-semibold flex items-center gap-2 hover:underline">{loginViewLink.text || fieldsObj.LoginView} <span>&rarr;</span></a>
+          <a href={loginViewUrl} className="text-white text-right font-semibold flex items-center gap-2 hover:underline">{loginViewLink.text} <span>&rarr;</span></a>
         </div>
         <div className="flex-1 bg-[#20544a] p-8 flex flex-col justify-center min-h-[200px]">
           <h3 className="text-white text-2xl font-bold mb-2">{fieldsObj.ConsolidationTitle}</h3>
           <p className="text-white text-lg mb-6">{fieldsObj.ConsolidationDescription}</p>
-          <a href={consolidationUrl} className="text-white text-right font-semibold flex items-center gap-2 hover:underline">{consolidationLink.text || fieldsObj.ConsolidationLink} <span>&rarr;</span></a>
+          <a href={consolidationUrl} className="text-white text-right font-semibold flex items-center gap-2 hover:underline">{consolidationLink.text} <span>&rarr;</span></a>
         </div>
       </div>
     </section>
