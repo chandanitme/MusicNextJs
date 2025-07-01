@@ -1,6 +1,110 @@
-import React from "react";
+// HomepageContent.tsx
+'use client';
 
-const HeroSection: React.FC = () => {
+
+import React, { useEffect, useState } from 'react';
+import { xmGraphQLClient } from '@/lib/xmclient';
+import { parseSitecoreLinkXml } from '../../helper/sitecoreHelper';
+
+const KGCD_SITE = process.env.NEXT_PUBLIC_KGCD_SITE || "kgcdemo";
+
+const herocomponent_query = `
+ query  heropcomponnetdata{
+  item(path: "/sitecore/content/demo-sites/kgcdemo/Data/Heroitem", language: "en") {
+  
+   
+    fields {
+      name
+      value
+    }
+  }
+}
+`
+
+interface Field {
+  name: string;
+  value: string;
+}
+
+interface Template {
+  name: string;
+}
+
+interface Item {
+
+  fields: Field[];
+}
+
+interface Layout {
+  item: Item;
+}
+interface HeropComponentDataResponse {
+  item: Item;
+}
+
+const HeroSection = () => {
+  const [fields, setFields] = useState<Field[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    xmGraphQLClient.request<HeropComponentDataResponse>(herocomponent_query)
+      .then((res) => {
+        setFields(res.item.fields || []);
+        setLoading(false);
+        console.log(res)
+      })
+      .catch((err: Error) => {
+        setError(err.message);
+        setLoading(false);
+        console.log("error", err.message)
+      });
+  }, []);
+
+  // Convert fields array to an object with field names as properties
+  const fieldsObj = React.useMemo(() => {
+    const obj: Record<string, string> = {};
+    fields.forEach(f => {
+      obj[f.name] = f.value;
+    });
+    return obj;
+  }, [fields]);
+
+  // Parse ResumeApplication, LoginView, and ConsolidationLink as Sitecore link XML
+  let resumeLink: { text?: string; url?: string } = {};
+  let loginViewLink: { text?: string; url?: string } = {};
+  let consolidationLink: { text?: string; url?: string } = {};
+
+  const resumeValue = fieldsObj.ResumeApplication;
+  const loginViewValue = fieldsObj.LoginView;
+  const consolidationValue = fieldsObj.ConsolidationLink;
+
+  if (resumeValue && resumeValue.trim().startsWith('<link')) {
+    resumeLink = parseSitecoreLinkXml(resumeValue);
+  } else {
+    resumeLink = { text: resumeValue };
+  }
+
+  if (loginViewValue && loginViewValue.trim().startsWith('<link')) {
+    loginViewLink = parseSitecoreLinkXml(loginViewValue);
+  } else {
+    loginViewLink = { text: loginViewValue };
+  }
+
+  if (consolidationValue && consolidationValue.trim().startsWith('<link')) {
+    consolidationLink = parseSitecoreLinkXml(consolidationValue);
+  } else {
+    consolidationLink = { text: consolidationValue };
+  }
+
+  const resumeUrl = resumeLink.url || '#';
+  const loginViewUrl = loginViewLink.url || '#';
+  const consolidationUrl = consolidationLink.url || '#';
+
+  if (loading) return <section>Loading...</section>;
+  if (error) return <section>Error: {error}</section>;
+  if (!fields || fields.length === 0) return <section>No data found.</section>;
+
   return (
     <section className="flex flex-col md:flex-row w-full min-h-[400px]">
       {/* Left: Background image with overlay and text */}
@@ -12,25 +116,25 @@ const HeroSection: React.FC = () => {
             <h2 className="text-white text-xl font-bold">Better Service <span className="text-red-500">&#8226;</span></h2>
           </div>
           <h1 className="text-white text-4xl md:text-5xl font-extrabold mb-8 leading-tight max-w-xl">
-            Apply for a personal loan of up to <span className="text-[#ff4b5c]">R300 000</span>
+           {fieldsObj.SubTitle} <span className="text-[#ff4b5c]">R300 000</span>
           </h1>
           <div className="flex flex-col gap-2 max-w-xs">
-            <a href="#" className="bg-teal-500 hover:bg-teal-600 text-white font-semibold py-3 rounded mb-2 text-center transition">APPLY ONLINE TODAY</a>
-            <a href="#" className="text-white underline text-center">RESUME APPLICATION</a>
+            <a href="#" className="bg-teal-500 hover:bg-teal-600 text-white font-semibold py-3 rounded mb-2 text-center transition">{fieldsObj.ApplyOnline}</a>
+            <a href={resumeUrl} className="text-white underline text-center">{resumeLink.text || fieldsObj.ResumeApplication}</a>
           </div>
         </div>
       </div>
       {/* Right: Info cards */}
       <div className="flex flex-col flex-shrink-0 w-full md:w-[420px]">
         <div className="flex-1 bg-[#17695b] p-8 flex flex-col justify-center min-h-[200px]">
-          <h3 className="text-white text-2xl font-bold mb-2">PULSE</h3>
-          <p className="text-white text-lg mb-6">Boost Your Financial Confidence with a Free Credit Rating</p>
-          <a href="#" className="text-white text-right font-semibold flex items-center gap-2 hover:underline">Login to view <span>&rarr;</span></a>
+          <h3 className="text-white text-2xl font-bold mb-2"> {fieldsObj.PulseTitle}</h3>
+          <p className="text-white text-lg mb-6">{fieldsObj.PulseDescription}</p>
+          <a href={loginViewUrl} className="text-white text-right font-semibold flex items-center gap-2 hover:underline">{loginViewLink.text || fieldsObj.LoginView} <span>&rarr;</span></a>
         </div>
         <div className="flex-1 bg-[#20544a] p-8 flex flex-col justify-center min-h-[200px]">
-          <h3 className="text-white text-2xl font-bold mb-2">CONSOLIDATION</h3>
-          <p className="text-white text-lg mb-6">Simplify your finances with a consolidation loan.</p>
-          <a href="#" className="text-white text-right font-semibold flex items-center gap-2 hover:underline">Apply online <span>&rarr;</span></a>
+          <h3 className="text-white text-2xl font-bold mb-2">{fieldsObj.ConsolidationTitle}</h3>
+          <p className="text-white text-lg mb-6">{fieldsObj.ConsolidationDescription}</p>
+          <a href={consolidationUrl} className="text-white text-right font-semibold flex items-center gap-2 hover:underline">{consolidationLink.text || fieldsObj.ConsolidationLink} <span>&rarr;</span></a>
         </div>
       </div>
     </section>
