@@ -69,15 +69,15 @@ const HeroSection = () => {
   return (
     <section className="flex flex-col md:flex-row w-full min-h-[400px]">
       {/* Left: Background image with overlay and text */}
-      <div className="relative flex-1 flex items-center justify-center min-h-[400px] bg-cover bg-center" style={{ backgroundImage: "url('/DA/hero-banner-img.png')" }}>
+      <div className="relative flex-1 flex items-center justify-center min-h-[400px] bg-cover bg-center" style={{ backgroundImage: "url('/DA/banner.jpg')" }}>
         <div className="absolute inset-0 bg-black/40" />
         <div className="relative z-10 p-8 md:p-16">
           <div className="mb-6">
-            <h2 className="text-white text-xl font-bold mb-1">Simple Loans <span className="text-red-500">&#8226;</span></h2>
-            <h2 className="text-white text-xl font-bold">Better Service <span className="text-red-500">&#8226;</span></h2>
+            <h2 className="text-white text-xl font-bold mb-1">Debit card <span className="text-red-500">&#8226;</span></h2>
+            <h2 className="text-white text-xl font-bold">Credit Card <span className="text-red-500">&#8226;</span></h2>
           </div>
           <h1 className="text-white text-4xl md:text-5xl font-extrabold mb-8 leading-tight max-w-xl">
-           {fieldsObj.SubTitle} <span className="text-[#ff4b5c]">R300 000</span>
+           {fieldsObj.SubTitle} <span className="text-[#ff4b5c]"></span>
           </h1>
           <div className="flex flex-col gap-2 max-w-xs">
             <a href="#" className="bg-teal-500 hover:bg-teal-600 text-white font-semibold py-3 rounded mb-2 text-center transition">{fieldsObj.ApplyOnline}</a>
